@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D22F67082E25641C00DEE179 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67072E25641C00DEE179 /* ContentView.swift */; };
+		D22F67092E25641C00DEE179 /* AudioVideoConverterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */; };
+		D22F670C2E256B9600DEE179 /* Appicon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D22F670B2E256B9600DEE179 /* Appicon.xcassets */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D2710F002E255AC000F4D335 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +30,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioVideoConverterApp.swift; sourceTree = "<group>"; };
+		D22F67072E25641C00DEE179 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D22F670A2E25642100DEE179 /* AudioVideoConverter-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioVideoConverter-Bridging-Header.h"; sourceTree = "<group>"; };
+		D22F670B2E256B9600DEE179 /* Appicon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Appicon.xcassets; sourceTree = "<group>"; };
 		D2710EF12E255ABE00F4D335 /* AudioVideoConverter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioVideoConverter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2710EFF2E255AC000F4D335 /* AudioVideoConverterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2710F092E255AC000F4D335 /* AudioVideoConverterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -31,11 +41,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D2710EF32E255ABE00F4D335 /* AudioVideoConverter */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AudioVideoConverter;
-			sourceTree = "<group>";
-		};
 		D2710F022E255AC000F4D335 /* AudioVideoConverterTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AudioVideoConverterTests;
@@ -76,11 +81,14 @@
 		D2710EE82E255ABE00F4D335 = {
 			isa = PBXGroup;
 			children = (
-				D2710EF32E255ABE00F4D335 /* AudioVideoConverter */,
+				D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */,
+				D22F67072E25641C00DEE179 /* ContentView.swift */,
+				D22F670B2E256B9600DEE179 /* Appicon.xcassets */,
 				D2710F022E255AC000F4D335 /* AudioVideoConverterTests */,
 				D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */,
 				D2710F292E255E6300F4D335 /* Frameworks */,
 				D2710EF22E255ABE00F4D335 /* Products */,
+				D22F670A2E25642100DEE179 /* AudioVideoConverter-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -116,9 +124,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				D2710EF32E255ABE00F4D335 /* AudioVideoConverter */,
 			);
 			name = AudioVideoConverter;
 			packageProductDependencies = (
@@ -185,6 +190,7 @@
 				TargetAttributes = {
 					D2710EF02E255ABE00F4D335 = {
 						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
 					};
 					D2710EFE2E255AC000F4D335 = {
 						CreatedOnToolsVersion = 16.4;
@@ -222,6 +228,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D22F670C2E256B9600DEE179 /* Appicon.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,6 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D22F67082E25641C00DEE179 /* ContentView.swift in Sources */,
+				D22F67092E25641C00DEE179 /* AudioVideoConverterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,7 +414,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = AudioVideoConverter/AudioVideoConverter.entitlements;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -426,6 +436,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AudioVideoConverter-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -436,7 +448,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = AudioVideoConverter/AudioVideoConverter.entitlements;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -457,6 +470,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "AudioVideoConverter-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
