@@ -1,0 +1,574 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		D2710F002E255AC000F4D335 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D2710EE92E255ABE00F4D335 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2710EF02E255ABE00F4D335;
+			remoteInfo = AudioVideoConverter;
+		};
+		D2710F0A2E255AC000F4D335 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D2710EE92E255ABE00F4D335 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2710EF02E255ABE00F4D335;
+			remoteInfo = AudioVideoConverter;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D2710EF12E255ABE00F4D335 /* AudioVideoConverter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioVideoConverter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2710EFF2E255AC000F4D335 /* AudioVideoConverterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2710F092E255AC000F4D335 /* AudioVideoConverterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2710F2A2E255E6300F4D335 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D2710EF32E255ABE00F4D335 /* AudioVideoConverter */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AudioVideoConverter;
+			sourceTree = "<group>";
+		};
+		D2710F022E255AC000F4D335 /* AudioVideoConverterTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AudioVideoConverterTests;
+			sourceTree = "<group>";
+		};
+		D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AudioVideoConverterUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2710EEE2E255ABE00F4D335 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710EFC2E255AC000F4D335 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710F062E255AC000F4D335 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D2710EE82E255ABE00F4D335 = {
+			isa = PBXGroup;
+			children = (
+				D2710EF32E255ABE00F4D335 /* AudioVideoConverter */,
+				D2710F022E255AC000F4D335 /* AudioVideoConverterTests */,
+				D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */,
+				D2710F292E255E6300F4D335 /* Frameworks */,
+				D2710EF22E255ABE00F4D335 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D2710EF22E255ABE00F4D335 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2710EF12E255ABE00F4D335 /* AudioVideoConverter.app */,
+				D2710EFF2E255AC000F4D335 /* AudioVideoConverterTests.xctest */,
+				D2710F092E255AC000F4D335 /* AudioVideoConverterUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D2710F292E255E6300F4D335 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D2710F2A2E255E6300F4D335 /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D2710EF02E255ABE00F4D335 /* AudioVideoConverter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D2710F132E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverter" */;
+			buildPhases = (
+				D2710EED2E255ABE00F4D335 /* Sources */,
+				D2710EEE2E255ABE00F4D335 /* Frameworks */,
+				D2710EEF2E255ABE00F4D335 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D2710EF32E255ABE00F4D335 /* AudioVideoConverter */,
+			);
+			name = AudioVideoConverter;
+			packageProductDependencies = (
+			);
+			productName = AudioVideoConverter;
+			productReference = D2710EF12E255ABE00F4D335 /* AudioVideoConverter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D2710EFE2E255AC000F4D335 /* AudioVideoConverterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D2710F162E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverterTests" */;
+			buildPhases = (
+				D2710EFB2E255AC000F4D335 /* Sources */,
+				D2710EFC2E255AC000F4D335 /* Frameworks */,
+				D2710EFD2E255AC000F4D335 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D2710F012E255AC000F4D335 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D2710F022E255AC000F4D335 /* AudioVideoConverterTests */,
+			);
+			name = AudioVideoConverterTests;
+			packageProductDependencies = (
+			);
+			productName = AudioVideoConverterTests;
+			productReference = D2710EFF2E255AC000F4D335 /* AudioVideoConverterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D2710F082E255AC000F4D335 /* AudioVideoConverterUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D2710F192E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverterUITests" */;
+			buildPhases = (
+				D2710F052E255AC000F4D335 /* Sources */,
+				D2710F062E255AC000F4D335 /* Frameworks */,
+				D2710F072E255AC000F4D335 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D2710F0B2E255AC000F4D335 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */,
+			);
+			name = AudioVideoConverterUITests;
+			packageProductDependencies = (
+			);
+			productName = AudioVideoConverterUITests;
+			productReference = D2710F092E255AC000F4D335 /* AudioVideoConverterUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D2710EE92E255ABE00F4D335 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					D2710EF02E255ABE00F4D335 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					D2710EFE2E255AC000F4D335 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = D2710EF02E255ABE00F4D335;
+					};
+					D2710F082E255AC000F4D335 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = D2710EF02E255ABE00F4D335;
+					};
+				};
+			};
+			buildConfigurationList = D2710EEC2E255ABE00F4D335 /* Build configuration list for PBXProject "AudioVideoConverter" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D2710EE82E255ABE00F4D335;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D2710EF22E255ABE00F4D335 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2710EF02E255ABE00F4D335 /* AudioVideoConverter */,
+				D2710EFE2E255AC000F4D335 /* AudioVideoConverterTests */,
+				D2710F082E255AC000F4D335 /* AudioVideoConverterUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D2710EEF2E255ABE00F4D335 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710EFD2E255AC000F4D335 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710F072E255AC000F4D335 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2710EED2E255ABE00F4D335 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710EFB2E255AC000F4D335 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2710F052E255AC000F4D335 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D2710F012E255AC000F4D335 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2710EF02E255ABE00F4D335 /* AudioVideoConverter */;
+			targetProxy = D2710F002E255AC000F4D335 /* PBXContainerItemProxy */;
+		};
+		D2710F0B2E255AC000F4D335 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2710EF02E255ABE00F4D335 /* AudioVideoConverter */;
+			targetProxy = D2710F0A2E255AC000F4D335 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D2710F112E255AC000F4D335 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D2710F122E255AC000F4D335 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		D2710F142E255AC000F4D335 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = AudioVideoConverter/AudioVideoConverter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = AudioVideoConverter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D2710F152E255AC000F4D335 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = AudioVideoConverter/AudioVideoConverter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = AudioVideoConverter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D2710F172E255AC000F4D335 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AudioVideoConverter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AudioVideoConverter";
+			};
+			name = Debug;
+		};
+		D2710F182E255AC000F4D335 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AudioVideoConverter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AudioVideoConverter";
+			};
+			name = Release;
+		};
+		D2710F1A2E255AC000F4D335 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverterUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = AudioVideoConverter;
+			};
+			name = Debug;
+		};
+		D2710F1B2E255AC000F4D335 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = X3SAR9P9PQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverterUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = AudioVideoConverter;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D2710EEC2E255ABE00F4D335 /* Build configuration list for PBXProject "AudioVideoConverter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2710F112E255AC000F4D335 /* Debug */,
+				D2710F122E255AC000F4D335 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D2710F132E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2710F142E255AC000F4D335 /* Debug */,
+				D2710F152E255AC000F4D335 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D2710F162E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2710F172E255AC000F4D335 /* Debug */,
+				D2710F182E255AC000F4D335 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D2710F192E255AC000F4D335 /* Build configuration list for PBXNativeTarget "AudioVideoConverterUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2710F1A2E255AC000F4D335 /* Debug */,
+				D2710F1B2E255AC000F4D335 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D2710EE92E255ABE00F4D335 /* Project object */;
+}
