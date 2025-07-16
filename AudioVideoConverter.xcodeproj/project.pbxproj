@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D2239FAD2E26C1260026F620 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2239FAC2E26C1260026F620 /* PreferencesView.swift */; };
+		D2239FB02E26C1330026F620 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D2239FAE2E26C1330026F620 /* Localizable.strings */; };
+		D2239FB12E26C1330026F620 /* Localizable.strings (Spanish) in Resources */ = {isa = PBXBuildFile; fileRef = D2239FAF2E26C1330026F620 /* Localizable.strings (Spanish) */; };
+		D2239FB32E26C7EC0026F620 /* ConverterDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2239FB22E26C7EC0026F620 /* ConverterDocument.swift */; };
 		D22F67082E25641C00DEE179 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67072E25641C00DEE179 /* ContentView.swift */; };
 		D22F67092E25641C00DEE179 /* AudioVideoConverterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */; };
 		D22F670C2E256B9600DEE179 /* Appicon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D22F670B2E256B9600DEE179 /* Appicon.xcassets */; };
@@ -30,6 +34,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D2239FAC2E26C1260026F620 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		D2239FAE2E26C1330026F620 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		D2239FAF2E26C1330026F620 /* Localizable.strings (Spanish) */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Localizable.strings (Spanish)"; sourceTree = "<group>"; };
+		D2239FB22E26C7EC0026F620 /* ConverterDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterDocument.swift; sourceTree = "<group>"; };
 		D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioVideoConverterApp.swift; sourceTree = "<group>"; };
 		D22F67072E25641C00DEE179 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D22F670A2E25642100DEE179 /* AudioVideoConverter-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioVideoConverter-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -83,12 +91,16 @@
 			children = (
 				D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */,
 				D22F67072E25641C00DEE179 /* ContentView.swift */,
+				D2239FAC2E26C1260026F620 /* PreferencesView.swift */,
+				D2239FB22E26C7EC0026F620 /* ConverterDocument.swift */,
 				D22F670B2E256B9600DEE179 /* Appicon.xcassets */,
 				D2710F022E255AC000F4D335 /* AudioVideoConverterTests */,
 				D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */,
 				D2710F292E255E6300F4D335 /* Frameworks */,
 				D2710EF22E255ABE00F4D335 /* Products */,
 				D22F670A2E25642100DEE179 /* AudioVideoConverter-Bridging-Header.h */,
+				D2239FAE2E26C1330026F620 /* Localizable.strings */,
+				D2239FAF2E26C1330026F620 /* Localizable.strings (Spanish) */,
 			);
 			sourceTree = "<group>";
 		};
@@ -229,6 +241,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D22F670C2E256B9600DEE179 /* Appicon.xcassets in Resources */,
+				D2239FB02E26C1330026F620 /* Localizable.strings in Resources */,
+				D2239FB12E26C1330026F620 /* Localizable.strings (Spanish) in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,6 +268,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D22F67082E25641C00DEE179 /* ContentView.swift in Sources */,
+				D2239FB32E26C7EC0026F620 /* ConverterDocument.swift in Sources */,
+				D2239FAD2E26C1260026F620 /* PreferencesView.swift in Sources */,
 				D22F67092E25641C00DEE179 /* AudioVideoConverterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -430,7 +446,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -464,7 +480,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ayaan.AudioVideoConverter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
