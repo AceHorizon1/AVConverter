@@ -6,6 +6,14 @@ import QuickLook
 import AppKit
 import Foundation
 import UniformTypeIdentifiers
+import CoreImage
+import CoreAudio
+import CoreMedia
+import MediaPlayer
+import Photos
+import Security
+import SystemConfiguration
+// import ffmpegkit  // FFmpeg Kit Swift Package not available, using shell commands with enhanced features
 
 enum Appearance: String, CaseIterable, Identifiable {
     case system = "System"
@@ -15,7 +23,15 @@ enum Appearance: String, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
-    @Binding var document: ConverterDocument
+    // UI-only state
+    @State private var importedFiles: [ConvertibleFile] = []
+    @State private var selectedFormat: String = "mp3"
+    @State private var selectedEngine: String = "AVFoundation"
+    @State private var isConverting = false
+    @State private var progress: Double = 0.0
+    @State private var statusMessage: String = ""
+    @State private var outputFolder: URL? = nil
+    @State private var selectedFile: ConvertibleFile? = nil
     // Conversion settings state
     @State private var audioBitrate: String = "192k"
     @State private var sampleRate: String = "44100"
@@ -36,376 +52,256 @@ struct ContentView: View {
     @State private var isDropTargeted: Bool = false
     @State private var quickLookURL: URL? = nil
     @State private var showQuickLookSheet: Bool = false
+    @State private var isNetworkAvailable: Bool = true
+    @State private var audioAnalysis: [String: Any] = [:]
+    @State private var showAdvancedSettings: Bool = false
 
     let formats = ["mp3", "m4a", "wav", "aac"]
     let engines = ["AVFoundation", "ffmpeg"]
-    let iCloudSuite = "iCloud.com.Ayaan.AudioVideoConverter"
-
-    var body: some View {
-        ZStack {
-            // Gradient Background
-            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.orange]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 14) {
-                    Text("Audio/Video Converter")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.top, 8)
-
-                    // Drag & Drop Area
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isDropTargeted ? Color.blue.opacity(0.25) : Color.white.opacity(0.15))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
-                                .foregroundColor(isDropTargeted ? Color.blue : Color.white.opacity(0.5))
-                        )
-                        .frame(height: 120)
-                        .overlay(
-                            Text("Drag & drop files or folders here")
-                                .foregroundColor(.white.opacity(0.8))
-                        )
-                        .onDrop(of: ["public.file-url"], isTargeted: $isDropTargeted) { providers in
-                            handleDrop(providers: providers)
-                        }
-                        .accessibilityLabel("File and folder drop area")
-                        .accessibilityHint("Drag and drop audio or video files or folders here to import them.")
-
-                    // File Picker Button
-                    Button(action: importFiles) {
-                        Label("Import Files", systemImage: "tray.and.arrow.down.fill")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(GradientButtonStyle())
-                    .padding(.horizontal)
-
-                    // List of imported files
-                    List(selection: $document.selectedFile) {
-                        ForEach(document.importedFiles) { file in
-                            HStack {
-                                Text(file.url.lastPathComponent)
-                                    .foregroundColor(.white)
-                                    .accessibilityLabel("File name: \(file.url.lastPathComponent)")
-                                Spacer()
-                                switch file.status {
-                                case .pending:
-                                    Image(systemName: "clock").foregroundColor(.yellow)
-                                        .accessibilityLabel("Pending")
-                                case .converting:
-                                    ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                                        .accessibilityLabel("Converting")
-                                case .success:
-                                    Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                                        .accessibilityLabel("Conversion successful")
-                                case .error:
-                                    Image(systemName: "xmark.octagon.fill").foregroundColor(.red)
-                                        .accessibilityLabel("Conversion error")
-                                    if let msg = file.errorMessage {
-                                        Text(msg).font(.caption).foregroundColor(.red)
-                                            .accessibilityLabel("Error: \(msg)")
-                                    }
-                                }
-                            }
-                            .onDrag {
-                                if file.status == .success {
-                                    let provider = NSItemProvider(object: file.url as NSURL)
-                                    provider.suggestedName = file.url.lastPathComponent
-                                    return provider
-                                }
-                                return NSItemProvider()
-                            }
-                            .contextMenu {
-                                Button("Reveal in Finder") {
-                                    NSWorkspace.shared.activateFileViewerSelecting([file.url])
-                                }
-                                .accessibilityLabel("Reveal in Finder")
-                                .accessibilityHint("Show this file in Finder.")
-                                Button("Play/Preview") {
-                                    document.selectedFile = file
-                                }
-                                .accessibilityLabel("Play or Preview")
-                                .accessibilityHint("Preview this file in the app.")
-                                Button("Quick Look") {
-                                    showQuickLook(for: file.url)
-                                }
-                                .accessibilityLabel("Quick Look")
-                                .accessibilityHint("Show a Quick Look preview of this file.")
-                                if file.status == .success {
-                                    Button("Share") {
-                                        shareFile(file.url)
-                                    }
-                                    .accessibilityLabel("Share")
-                                    .accessibilityHint("Share this file using the macOS share sheet.")
-                                }
-                                Button("Remove from List") {
-                                    if let idx = document.importedFiles.firstIndex(of: file) {
-                                        withAnimation {
-                                            document.importedFiles.remove(at: idx)
-                                        }
-                                    }
-                                }
-                                .accessibilityLabel("Remove from List")
-                                .accessibilityHint("Remove this file from the imported files list.")
-                            }
-                            .transition(.move(edge: .leading).combined(with: .opacity))
-                        }
-                    }
-                    .animation(.easeInOut, value: document.importedFiles)
-                    .frame(height: 150)
-                    .background(Color.white.opacity(0.05))
-                    .cornerRadius(10)
-                    .listStyle(PlainListStyle())
-                    .accessibilityLabel("Imported files list")
-                    .accessibilityHint("List of imported audio and video files. Use arrow keys to navigate.")
-
-                    // Preview Player below the list
-                    if let file = document.selectedFile {
-                        PreviewPlayer(url: file.url)
-                            .frame(height: 80)
-                            .padding(.bottom, 10)
-                    }
-
-                    // Format selection
-                    Picker("Convert to:", selection: $document.selectedFormat) {
-                        ForEach(formats, id: \.self) { format in
-                            Text(format.uppercased())
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-
-                    // Engine selection
-                    Picker("Engine:", selection: $document.selectedEngine) {
-                        ForEach(engines, id: \.self) { engine in
-                            Text(engine)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-
-                    // Conversion Settings Section
-                    GroupBox(label: Label("Conversion Settings", systemImage: "slider.horizontal.3")) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Audio Bitrate:")
-                                TextField("e.g. 192k", text: $audioBitrate)
-                                    .frame(width: 60)
-                            }
-                            HStack {
-                                Text("Sample Rate:")
-                                TextField("e.g. 44100", text: $sampleRate)
-                                    .frame(width: 60)
-                            }
-                            HStack {
-                                Text("Channels:")
-                                Stepper(value: $audioChannels, in: 1...8) {
-                                    Text("\(audioChannels)")
-                                }
-                                .frame(width: 100)
-                            }
-                            HStack {
-                                Text("Video Resolution:")
-                                TextField("e.g. 1280x720", text: $videoResolution)
-                                    .frame(width: 80)
-                            }
-                            HStack {
-                                Text("Video Bitrate:")
-                                TextField("e.g. 2M", text: $videoBitrate)
-                                    .frame(width: 60)
-                            }
-                        }
-                        .foregroundColor(.white)
-                    }
-                    .padding(.horizontal)
-
-                    // Metadata Editing Section
-                    GroupBox(label: Label("Metadata", systemImage: "tag")) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Title:")
-                                TextField("Title", text: $metadataTitle)
-                            }
-                            HStack {
-                                Text("Artist:")
-                                TextField("Artist", text: $metadataArtist)
-                            }
-                            HStack {
-                                Text("Album:")
-                                TextField("Album", text: $metadataAlbum)
-                            }
-                            HStack {
-                                Text("Cover Art:")
-                                if let coverArt = coverArt {
-                                    Image(nsImage: coverArt)
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .cornerRadius(4)
-                                }
-                                Button("Choose Image") {
-                                    pickCoverArt()
-                                }
-                            }
-                        }
-                        .foregroundColor(.white)
-                    }
-                    .padding(.horizontal)
-
-                    // Output Folder Picker
-                    HStack {
-                        Button(action: pickOutputFolder) {
-                            Label("Choose Output Folder", systemImage: "folder.fill")
-                                .padding(8)
-                        }
-                        .buttonStyle(GradientButtonStyle())
-                        if let folder = document.outputFolder {
-                            Text(folder.path)
-                                .font(.caption)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                                .foregroundColor(.white.opacity(0.8))
-                        } else {
-                            Text("(Default: Same as original file)")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    // Appearance Picker
-                    HStack {
-                        Text("Appearance:")
-                            .foregroundColor(.white)
-                        Picker("Appearance", selection: $appearance) {
-                            ForEach(Appearance.allCases) { mode in
-                                Text(mode.rawValue)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 220)
-                    }
-                    .padding(.horizontal)
-                    .onChange(of: appearance) { newValue in
-                        switch newValue {
-                        case .system:
-                            NSApp.appearance = nil
-                        case .light:
-                            NSApp.appearance = NSAppearance(named: .aqua)
-                        case .dark:
-                            NSApp.appearance = NSAppearance(named: .darkAqua)
-                        }
-                    }
-
-                    // Convert Button
-                    Button(action: convertFiles) {
-                        Label("Convert", systemImage: "arrow.right.circle.fill")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(GradientButtonStyle())
-                    .padding(.horizontal)
-                    .disabled(document.importedFiles.isEmpty || document.isConverting)
-                    .accessibilityLabel("Convert Files")
-                    .accessibilityHint("Convert the imported files to the selected format.")
-
-                    // Progress Indicator
-                    if document.isConverting {
-                        ProgressView(value: document.progress, total: 1.0) {
-                            Text("Converting...")
-                                .foregroundColor(.white)
-                        }
-                        .progressViewStyle(LinearProgressViewStyle(tint: .white))
-                        .padding(.horizontal)
-                        .opacity(document.isConverting ? 1 : 0)
-                        .animation(.easeInOut, value: document.isConverting)
-                    }
-
-                    if !document.statusMessage.isEmpty {
-                        Text(document.statusMessage)
-                            .foregroundColor(.white)
-                            .opacity(!document.statusMessage.isEmpty ? 1 : 0)
-                            .animation(.easeInOut, value: document.statusMessage)
-                    }
-
-                    // Conversion History Section
-                    GroupBox(label: Label("Recent Conversions", systemImage: "clock.arrow.circlepath")) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            if conversionHistory.isEmpty {
-                                Text("No recent conversions.")
-                                    .foregroundColor(.white.opacity(0.7))
-                            } else {
-                                ForEach(conversionHistory) { item in
-                                    HStack {
-                                        Text(item.fileName)
-                                            .foregroundColor(.white)
-                                            .lineLimit(1)
-                                            .truncationMode(.middle)
-                                        Spacer()
-                                        Text(item.date, style: .time)
-                                            .font(.caption)
-                                            .foregroundColor(.white.opacity(0.7))
-                                        Button(action: { NSWorkspace.shared.open(item.outputURL) }) {
-                                            Image(systemName: "arrow.up.right.square")
-                                        }
-                                        .buttonStyle(BorderlessButtonStyle())
-                                        Button(action: { NSWorkspace.shared.activateFileViewerSelecting([item.outputURL]) }) {
-                                            Image(systemName: "folder")
-                                        }
-                                        .buttonStyle(BorderlessButtonStyle())
-                                        // Drag support
-                                        .onDrag {
-                                            NSItemProvider(object: item.outputURL as NSURL)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    // Logs Section
-                    GroupBox(label: Label("Logs", systemImage: "doc.text.magnifyingglass")) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            if logMessages.isEmpty {
-                                Text("No logs yet.")
-                                    .foregroundColor(.white.opacity(0.7))
-                            } else {
-                                ScrollView {
-                                    ForEach(logMessages.indices, id: \.self) { idx in
-                                        Text(logMessages[idx])
-                                            .font(.caption2)
-                                            .foregroundColor(.white)
-                                            .padding(.bottom, 2)
-                                    }
-                                }
-                                HStack {
-                                    Button("Copy All") {
-                                        let pasteboard = NSPasteboard.general
-                                        pasteboard.clearContents()
-                                        pasteboard.setString(logMessages.joined(separator: "\n"), forType: .string)
-                                    }
-                                    .buttonStyle(GradientButtonStyle())
-                                    Button("Clear") { logMessages.removeAll() }
-                                        .buttonStyle(GradientButtonStyle())
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    Spacer(minLength: 0)
-                }
-                .padding(12)
-                .frame(maxWidth: 500)
-                .navigationTitle("Audio/Video Converter")
+    
+    // MARK: - UI Components
+    private var backgroundGradient: some View {
+        Group {
+            if appearance == .dark {
+                Color.black
+                    .ignoresSafeArea()
+            } else {
+                LinearGradient(gradient: Gradient(colors: [Color.blue, Color.orange]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .ignoresSafeArea()
             }
         }
-        .onAppear {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+    
+    private var titleView: some View {
+        Text("Audio/Video Converter")
+            .font(.title)
+            .fontWeight(.bold)
+            .foregroundColor(appearance == .dark ? .white : .primary)
+            .padding(.top, 8)
+    }
+    
+    private var dragDropArea: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(isDropTargeted ? Color.blue.opacity(0.25) : Color.white.opacity(0.15))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
+                    .foregroundColor(isDropTargeted ? Color.blue : Color.white.opacity(0.5))
+            )
+            .frame(height: 120)
+            .overlay(
+                Text("Drag & drop files or folders here")
+                    .foregroundColor(appearance == .dark ? .white.opacity(0.8) : .primary.opacity(0.8))
+            )
+            .onDrop(of: ["public.file-url"], isTargeted: $isDropTargeted) { providers in
+                handleDrop(providers: providers)
+            }
+            .accessibilityLabel("File and folder drop area")
+            .accessibilityHint("Drag and drop audio or video files or folders here to import them.")
+    }
+    
+    private var importButton: some View {
+        Button(action: importFiles) {
+            Label("Import Files", systemImage: "tray.and.arrow.down.fill")
+                .padding()
+                .frame(maxWidth: .infinity)
         }
+        .buttonStyle(GradientButtonStyle())
+        .padding(.horizontal)
+    }
+    
+    private var fileListView: some View {
+        List(selection: $selectedFile) {
+            ForEach(importedFiles) { file in
+                fileRow(for: file)
+            }
+        }
+        .animation(.easeInOut, value: importedFiles)
+        .frame(height: 150)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(10)
+        .listStyle(PlainListStyle())
+        .accessibilityLabel("Imported files list")
+        .accessibilityHint("List of imported audio and video files. Use arrow keys to navigate.")
+    }
+    
+    private var previewPlayerView: some View {
+        Group {
+            if let file = selectedFile {
+                PreviewPlayer(url: file.url)
+                    .frame(height: 80)
+                    .padding(.bottom, 10)
+            }
+        }
+    }
+    
+    private var formatSelectionView: some View {
+        Picker("Convert to:", selection: $selectedFormat) {
+            ForEach(formats, id: \.self) { format in
+                Text(format.uppercased())
+            }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal)
+    }
+    
+    private var engineSelectionView: some View {
+        Picker("Engine:", selection: $selectedEngine) {
+            ForEach(engines, id: \.self) { engine in
+                Text(engine)
+            }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal)
+    }
+    
+    private var conversionSettingsView: some View {
+        GroupBox(label: Label("Conversion Settings", systemImage: "slider.horizontal.3")) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Audio Bitrate:")
+                    TextField("e.g. 192k", text: $audioBitrate)
+                        .frame(width: 60)
+                }
+                HStack {
+                    Text("Sample Rate:")
+                    TextField("e.g. 44100", text: $sampleRate)
+                        .frame(width: 60)
+                }
+                HStack {
+                    Text("Channels:")
+                    Stepper(value: $audioChannels, in: 1...8) {
+                        Text("\(audioChannels)")
+                    }
+                    .frame(width: 100)
+                }
+                HStack {
+                    Text("Video Resolution:")
+                    TextField("e.g. 1280x720", text: $videoResolution)
+                        .frame(width: 80)
+                }
+                HStack {
+                    Text("Video Bitrate:")
+                    TextField("e.g. 2M", text: $videoBitrate)
+                        .frame(width: 60)
+                }
+                
+                Button("Advanced Settings") {
+                    showAdvancedSettings.toggle()
+                }
+                .buttonStyle(.borderless)
+                .foregroundColor(.blue)
+            }
+            .foregroundColor(appearance == .dark ? .white : .primary)
+        }
+        .padding(.horizontal)
+        .sheet(isPresented: $showAdvancedSettings) {
+            VStack(spacing: 20) {
+                Text("Advanced Settings")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Network Status: \(isNetworkAvailable ? "Connected" : "Disconnected")")
+                        .foregroundColor(isNetworkAvailable ? .green : .red)
+                    
+                    if !audioAnalysis.isEmpty {
+                        Text("File Analysis:")
+                            .fontWeight(.semibold)
+                        Text("Duration: \(String(format: "%.2f", audioAnalysis["duration"] as? Double ?? 0))s")
+                        Text("Has Audio: \(audioAnalysis["hasAudio"] as? Bool == true ? "Yes" : "No")")
+                        Text("Has Video: \(audioAnalysis["hasVideo"] as? Bool == true ? "Yes" : "No")")
+                        
+                        if let audioStreams = audioAnalysis["audioStreams"] as? Int {
+                            Text("Audio Streams: \(audioStreams)")
+                        }
+                        if let videoStreams = audioAnalysis["videoStreams"] as? Int {
+                            Text("Video Streams: \(videoStreams)")
+                        }
+                    }
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+                
+                Button("Close") {
+                    showAdvancedSettings = false
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+            .frame(width: 400, height: 300)
+        }
+    }
+    
+    private var metadataView: some View {
+        GroupBox(label: Label("Metadata", systemImage: "tag")) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Title:")
+                    TextField("Title", text: $metadataTitle)
+                }
+                HStack {
+                    Text("Artist:")
+                    TextField("Artist", text: $metadataArtist)
+                }
+                HStack {
+                    Text("Album:")
+                    TextField("Album", text: $metadataAlbum)
+                }
+                HStack {
+                    Text("Cover Art:")
+                    if let coverArt = coverArt {
+                        Image(nsImage: coverArt)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .cornerRadius(4)
+                    }
+                    Button("Choose Image") {
+                        pickCoverArt()
+                    }
+                }
+            }
+            .foregroundColor(appearance == .dark ? .white : .primary)
+        }
+        .padding(.horizontal)
+    }
+    
+    private var outputFolderView: some View {
+        HStack {
+            Button(action: pickOutputFolder) {
+                Label("Choose Output Folder", systemImage: "folder.fill")
+                    .padding(8)
+            }
+            .buttonStyle(GradientButtonStyle())
+            if let folder = outputFolder {
+                Text(folder.path)
+                    .font(.caption)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .foregroundColor(appearance == .dark ? .white.opacity(0.8) : .primary.opacity(0.8))
+            } else {
+                Text("(Default: Same as original file)")
+                    .font(.caption)
+                    .foregroundColor(appearance == .dark ? .white.opacity(0.8) : .primary.opacity(0.8))
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var appearanceView: some View {
+        HStack {
+            Text("Appearance:")
+                .foregroundColor(appearance == .dark ? .white : .primary)
+            Picker("Appearance", selection: $appearance) {
+                ForEach(Appearance.allCases) { mode in
+                    Text(mode.rawValue)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .frame(width: 220)
+        }
+        .padding(.horizontal)
         .onChange(of: appearance) { newValue in
             switch newValue {
             case .system:
@@ -416,16 +312,112 @@ struct ContentView: View {
                 NSApp.appearance = NSAppearance(named: .darkAqua)
             }
         }
-        .onChange(of: document.importFilesTrigger) { newValue in
-            if newValue {
-                importFiles()
+    }
+    
+    private var convertButtonView: some View {
+        Button(action: convertFiles) {
+            Label("Convert", systemImage: "arrow.right.circle.fill")
+                .padding()
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(GradientButtonStyle())
+        .padding(.horizontal)
+        .disabled(importedFiles.isEmpty || isConverting)
+        .accessibilityLabel("Convert Files")
+        .accessibilityHint("Convert the imported files to the selected format.")
+    }
+    
+    private var progressView: some View {
+        Group {
+            if isConverting {
+                ProgressView(value: progress, total: 1.0) {
+                    Text("Converting...")
+                        .foregroundColor(appearance == .dark ? .white : .primary)
+                }
+                .progressViewStyle(LinearProgressViewStyle(tint: .white))
+                .padding(.horizontal)
+                .opacity(isConverting ? 1 : 0)
+                .animation(.easeInOut, value: isConverting)
             }
         }
-        .onChange(of: document.pickOutputFolderTrigger) { newValue in
-            if newValue {
-                pickOutputFolder()
+    }
+    
+    private var statusMessageView: some View {
+        Group {
+            if !statusMessage.isEmpty {
+                Text(statusMessage)
+                    .foregroundColor(appearance == .dark ? .white : .primary)
+                    .opacity(!statusMessage.isEmpty ? 1 : 0)
+                    .animation(.easeInOut, value: statusMessage)
             }
         }
+    }
+    
+    private var conversionHistoryView: some View {
+        GroupBox(label: Label("Recent Conversions", systemImage: "clock.arrow.circlepath")) {
+            VStack(alignment: .leading, spacing: 8) {
+                if conversionHistory.isEmpty {
+                    Text("No recent conversions.")
+                        .foregroundColor(appearance == .dark ? .white.opacity(0.7) : .primary.opacity(0.7))
+                } else {
+                    ForEach(conversionHistory) { item in
+                        HStack {
+                            Text(item.fileName)
+                                .foregroundColor(appearance == .dark ? .white : .primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Spacer()
+                            Text(item.date, style: .time)
+                                .font(.caption)
+                                .foregroundColor(appearance == .dark ? .white.opacity(0.7) : .primary.opacity(0.7))
+                            Button(action: { NSWorkspace.shared.open(item.outputURL) }) {
+                                Image(systemName: "arrow.up.right.square")
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                            Button(action: { NSWorkspace.shared.activateFileViewerSelecting([item.outputURL]) }) {
+                                Image(systemName: "folder")
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                            // Drag support
+                            .onDrag {
+                                NSItemProvider(object: item.outputURL as NSURL)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    var body: some View {
+        ZStack {
+            backgroundGradient
+            
+            ScrollView {
+                VStack(spacing: 14) {
+                    titleView
+                    dragDropArea
+                    importButton
+                    fileListView
+                    previewPlayerView
+                    formatSelectionView
+                    engineSelectionView
+                    conversionSettingsView
+                    metadataView
+                    outputFolderView
+                    appearanceView
+                    convertButtonView
+                    progressView
+                    statusMessageView
+                    conversionHistoryView
+                }
+            }
+        }
+        .onAppear {
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        }
+
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button(action: importFiles) {
@@ -440,9 +432,7 @@ struct ContentView: View {
                 .help("Convert Selected Files")
                 .accessibilityLabel("Convert Files")
                 .accessibilityHint("Convert the imported files to the selected format.")
-                Button(action: {
-                    NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-                }) {
+                Button(action: showPreferences) {
                     Label("Preferences", systemImage: "gearshape")
                 }
                 .help("Preferences")
@@ -452,7 +442,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                if event.keyCode == 49, let file = document.selectedFile { // 49 is Space bar
+                if event.keyCode == 49, let file = selectedFile { // 49 is Space bar
                     showQuickLook(for: file.url)
                     return nil // Swallow the event
                 }
@@ -464,9 +454,16 @@ struct ContentView: View {
                 QuickLookSheetView(url: url)
             }
         }
-        .background(TouchBarHost(importAction: importFiles, convertAction: convertFiles, preferencesAction: {}))
+        .touchBar {
+            TouchBarHost(importAction: importFiles, convertAction: convertFiles, preferencesAction: showPreferences)
+        }
     }
 
+    // MARK: - Preferences
+    private func showPreferences() {
+        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+    }
+    
     // MARK: - File Import Helpers
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
         for provider in providers {
@@ -485,11 +482,13 @@ struct ContentView: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        panel.allowedContentTypes = [.png, .jpeg]
+        panel.allowedContentTypes = [.audio, .movie]
         if panel.runModal() == .OK {
             for url in panel.urls {
-                if !document.importedFiles.contains(where: { $0.url == url }) {
-                    document.importedFiles.append(ConvertibleFile(url: url))
+                if isSupportedMediaFile(url) {
+                    if !importedFiles.contains(where: { $0.url == url }) {
+                        importedFiles.append(ConvertibleFile(url: url))
+                    }
                 }
             }
         }
@@ -502,15 +501,15 @@ struct ContentView: View {
             if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil) {
                 for case let fileURL as URL in enumerator {
                     if isSupportedMediaFile(fileURL) {
-                        if !document.importedFiles.contains(where: { $0.url == fileURL }) {
-                            document.importedFiles.append(ConvertibleFile(url: fileURL))
+                        if !importedFiles.contains(where: { $0.url == fileURL }) {
+                            importedFiles.append(ConvertibleFile(url: fileURL))
                         }
                     }
                 }
             }
         } else if isSupportedMediaFile(url) {
-            if !document.importedFiles.contains(where: { $0.url == url }) {
-                document.importedFiles.append(ConvertibleFile(url: url))
+            if !importedFiles.contains(where: { $0.url == url }) {
+                importedFiles.append(ConvertibleFile(url: url))
             }
         }
     }
@@ -522,46 +521,51 @@ struct ContentView: View {
 
     // MARK: - Conversion Logic
     private func convertFiles() {
-        document.isConverting = true
-        document.progress = 0.0
-        document.statusMessage = ""
-        let total = Double(document.importedFiles.count)
-        for (index, file) in document.importedFiles.enumerated() {
+        isConverting = true
+        progress = 0.0
+        statusMessage = ""
+        let total = Double(importedFiles.count)
+        for (index, file) in importedFiles.enumerated() {
             updateFileStatus(file: file, status: .converting)
-            let outputDir = document.outputFolder ?? file.url.deletingLastPathComponent()
+            let outputDir = outputFolder ?? file.url.deletingLastPathComponent()
             let outputURL = outputDir.appendingPathComponent(file.url.deletingPathExtension().lastPathComponent)
-                .appendingPathExtension(document.selectedFormat)
-            if document.selectedEngine == "AVFoundation" {
+                .appendingPathExtension(selectedFormat)
+            if selectedEngine == "AVFoundation" {
                 convertWithAVFoundation(inputURL: file.url, outputURL: outputURL) { success, error in
                     DispatchQueue.main.async {
-                        document.progress = Double(index + 1) / total
+                        progress = Double(index + 1) / total
                         if !success {
                             updateFileStatus(file: file, status: .error, errorMessage: error?.localizedDescription ?? "AVFoundation failed")
                             logError("AVFoundation failed for \(file.url.lastPathComponent): \(error?.localizedDescription ?? "Unknown error")")
-                            document.statusMessage = "AVFoundation failed: \(error?.localizedDescription ?? "Unknown error"). Trying ffmpeg..."
+                            statusMessage = "AVFoundation failed: \(error?.localizedDescription ?? "Unknown error"). Trying ffmpeg..."
                             convertWithFFmpeg(inputURL: file.url, outputURL: outputURL) { ffSuccess, ffError in
                                 DispatchQueue.main.async {
                                     if ffSuccess {
                                         updateFileStatus(file: file, status: .success)
                                         logEvent("Successfully converted \(file.url.lastPathComponent) to \(outputURL.lastPathComponent)")
-                                        addToHistory(fileName: outputURL.lastPathComponent, outputURL: outputURL)
+                                        addToHistory(fileName: file.url.lastPathComponent, outputURL: outputURL)
+                                        setSpotlightMetadata(for: outputURL)
+                                        if index == importedFiles.count - 1 {
+                                            isConverting = false
+                                            notifyConversionComplete()
+                                        }
                                     } else {
-                                        updateFileStatus(file: file, status: .error, errorMessage: ffError?.localizedDescription ?? "ffmpeg failed")
-                                        logError("ffmpeg failed for \(file.url.lastPathComponent): \(ffError?.localizedDescription ?? "Unknown error")")
-                                        document.statusMessage = "Both engines failed: \(ffError?.localizedDescription ?? "Unknown error")"
-                                    }
-                                    if index == document.importedFiles.count - 1 {
-                                        document.isConverting = false
-                                        notifyConversionComplete()
+                                        updateFileStatus(file: file, status: .error, errorMessage: ffError?.localizedDescription ?? "FFmpeg failed")
+                                        logError("FFmpeg failed for \(file.url.lastPathComponent): \(ffError?.localizedDescription ?? "Unknown error")")
+                                        statusMessage = "Conversion failed for \(file.url.lastPathComponent)"
+                                        if index == importedFiles.count - 1 {
+                                            isConverting = false
+                                        }
                                     }
                                 }
                             }
                         } else {
                             updateFileStatus(file: file, status: .success)
                             logEvent("Successfully converted \(file.url.lastPathComponent) to \(outputURL.lastPathComponent)")
-                            addToHistory(fileName: outputURL.lastPathComponent, outputURL: outputURL)
-                            if index == document.importedFiles.count - 1 {
-                                document.isConverting = false
+                            addToHistory(fileName: file.url.lastPathComponent, outputURL: outputURL)
+                            setSpotlightMetadata(for: outputURL)
+                            if index == importedFiles.count - 1 {
+                                isConverting = false
                                 notifyConversionComplete()
                             }
                         }
@@ -570,19 +574,23 @@ struct ContentView: View {
             } else {
                 convertWithFFmpeg(inputURL: file.url, outputURL: outputURL) { success, error in
                     DispatchQueue.main.async {
-                        document.progress = Double(index + 1) / total
+                        progress = Double(index + 1) / total
                         if success {
                             updateFileStatus(file: file, status: .success)
                             logEvent("Successfully converted \(file.url.lastPathComponent) to \(outputURL.lastPathComponent)")
-                            addToHistory(fileName: outputURL.lastPathComponent, outputURL: outputURL)
+                            addToHistory(fileName: file.url.lastPathComponent, outputURL: outputURL)
+                            setSpotlightMetadata(for: outputURL)
+                            if index == importedFiles.count - 1 {
+                                isConverting = false
+                                notifyConversionComplete()
+                            }
                         } else {
-                            updateFileStatus(file: file, status: .error, errorMessage: error?.localizedDescription ?? "ffmpeg failed")
-                            logError("ffmpeg failed for \(file.url.lastPathComponent): \(error?.localizedDescription ?? "Unknown error")")
-                            document.statusMessage = "ffmpeg failed: \(error?.localizedDescription ?? "Unknown error")"
-                        }
-                        if index == document.importedFiles.count - 1 {
-                            document.isConverting = false
-                            notifyConversionComplete()
+                            updateFileStatus(file: file, status: .error, errorMessage: error?.localizedDescription ?? "FFmpeg failed")
+                            logError("FFmpeg failed for \(file.url.lastPathComponent): \(error?.localizedDescription ?? "Unknown error")")
+                            statusMessage = "Conversion failed for \(file.url.lastPathComponent)"
+                            if index == importedFiles.count - 1 {
+                                isConverting = false
+                            }
                         }
                     }
                 }
@@ -592,21 +600,11 @@ struct ContentView: View {
 
     private func convertWithAVFoundation(inputURL: URL, outputURL: URL, completion: @escaping (Bool, Error?) -> Void) {
         let asset = AVAsset(url: inputURL)
-        guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetPassthrough) else {
-            completion(false, NSError(domain: "AVFoundation", code: -1, userInfo: [NSLocalizedDescriptionKey: "Cannot create export session"]))
-            return
-        }
-        exportSession.outputURL = outputURL
-        exportSession.outputFileType = fileType(for: outputURL.pathExtension)
-        exportSession.exportAsynchronously {
-            switch exportSession.status {
-            case .completed:
-                completion(true, nil)
-            case .failed, .cancelled:
-                completion(false, exportSession.error)
-            default:
-                completion(false, NSError(domain: "AVFoundation", code: -2, userInfo: [NSLocalizedDescriptionKey: "Unknown export error"]))
-            }
+        let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetAppleM4A)
+        exportSession?.outputURL = outputURL
+        exportSession?.outputFileType = fileType(for: selectedFormat)
+        exportSession?.exportAsynchronously {
+            completion(exportSession?.status == .completed, exportSession?.error)
         }
     }
 
@@ -615,49 +613,284 @@ struct ContentView: View {
         case "mp3": return .mp3
         case "m4a": return .m4a
         case "wav": return .wav
-        case "aac": return .m4a // Use .m4a for AAC
-        case "mov": return .mov
-        case "mp4": return .mp4
-        default: return nil
+        case "aac": return .m4a  // Use .m4a for AAC files
+        default: return .m4a
         }
     }
 
-    // Update convertWithFFmpeg to use metadata
     private func convertWithFFmpeg(inputURL: URL, outputURL: URL, completion: @escaping (Bool, Error?) -> Void) {
+        // Check if FFmpeg is available on the system
+        let ffmpegPath = findFFmpegPath()
+        
+        guard let ffmpeg = ffmpegPath else {
+            completion(false, NSError(domain: "FFmpeg", code: -1, userInfo: [NSLocalizedDescriptionKey: "FFmpeg not found. Please install FFmpeg using Homebrew: brew install ffmpeg"]))
+            return
+        }
+        
+        // Build FFmpeg command based on selected format and settings
+        let command = buildFFmpegCommand(inputURL: inputURL, outputURL: outputURL)
+        
+        // Create process with enhanced error handling
         let process = Process()
-        process.launchPath = "/opt/homebrew/bin/ffmpeg"
-        var args = ["-i", inputURL.path]
-        // Audio settings
-        if ["mp3", "m4a", "aac", "wav"].contains(outputURL.pathExtension.lowercased()) {
-            args += ["-b:a", audioBitrate, "-ar", sampleRate, "-ac", "\(audioChannels)"]
-        }
-        // Video settings
-        if ["mp4", "mov", "mkv", "avi"].contains(outputURL.pathExtension.lowercased()) {
-            args += ["-s", videoResolution, "-b:v", videoBitrate]
-        }
-        // Metadata
-        if !metadataTitle.isEmpty { args += ["-metadata", "title=\(metadataTitle)"] }
-        if !metadataArtist.isEmpty { args += ["-metadata", "artist=\(metadataArtist)"] }
-        if !metadataAlbum.isEmpty { args += ["-metadata", "album=\(metadataAlbum)"] }
-        if let coverArtURL = coverArtURL {
-            args += ["-i", coverArtURL.path, "-map", "0", "-map", "1", "-c", "copy", "-disposition:v:1", "attached_pic"]
-        }
-        args.append(outputURL.path)
-        process.arguments = args
-        process.terminationHandler = { proc in
+        process.executableURL = URL(fileURLWithPath: ffmpeg)
+        process.arguments = command
+        
+        // Set up pipes for output
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+        
+        // Handle process completion with progress tracking
+        process.terminationHandler = { process in
             DispatchQueue.main.async {
-                if proc.terminationStatus == 0 {
+                if process.terminationStatus == 0 {
                     completion(true, nil)
                 } else {
-                    completion(false, NSError(domain: "ffmpeg", code: Int(proc.terminationStatus), userInfo: [NSLocalizedDescriptionKey: "ffmpeg failed with code \(proc.terminationStatus)"]))
+                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    let errorString = String(data: errorData, encoding: .utf8) ?? "Unknown FFmpeg error"
+                    completion(false, NSError(domain: "FFmpeg", code: Int(process.terminationStatus), userInfo: [NSLocalizedDescriptionKey: errorString]))
                 }
             }
         }
+        
+        // Start conversion with progress monitoring
         do {
             try process.run()
+            
+            // Monitor progress by reading error output (FFmpeg writes progress to stderr)
+            DispatchQueue.global(qos: .background).async {
+                let errorHandle = errorPipe.fileHandleForReading
+                while process.isRunning {
+                    if let data = try? errorHandle.read(upToCount: 1024),
+                       let line = String(data: data, encoding: .utf8) {
+                        // Parse FFmpeg progress output
+                        if line.contains("time=") {
+                            self.parseFFmpegProgress(line)
+                        }
+                    }
+                    Thread.sleep(forTimeInterval: 0.1)
+                }
+            }
         } catch {
             completion(false, error)
         }
+    }
+    
+    private func parseFFmpegProgress(_ line: String) {
+        // Parse FFmpeg progress output like "time=00:00:15.00 bitrate= 128.0kbits/s"
+        if let timeRange = line.range(of: "time=\\d{2}:\\d{2}:\\d{2}\\.\\d{2}", options: .regularExpression) {
+            let timeString = String(line[timeRange]).replacingOccurrences(of: "time=", with: "")
+            let components = timeString.split(separator: ":")
+            if components.count == 3,
+               let hours = Double(components[0]),
+               let minutes = Double(components[1]),
+               let seconds = Double(components[2]) {
+                let totalSeconds = hours * 3600 + minutes * 60 + seconds
+                DispatchQueue.main.async {
+                    self.progress = min(totalSeconds / 60.0, 1.0) // Assuming 60 seconds max
+                }
+            }
+        }
+    }
+    
+    private func findFFmpegPath() -> String? {
+        // Check common FFmpeg installation paths
+        let possiblePaths = [
+            "/usr/local/bin/ffmpeg",
+            "/opt/homebrew/bin/ffmpeg",
+            "/usr/bin/ffmpeg"
+        ]
+        
+        for path in possiblePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        
+        // Try to find FFmpeg in PATH
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["ffmpeg"]
+        
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            
+            if process.terminationStatus == 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                    return path
+                }
+            }
+        } catch {
+            // Ignore errors, continue to next method
+        }
+        
+        return nil
+    }
+    
+    private func buildFFmpegCommand(inputURL: URL, outputURL: URL) -> [String] {
+        var command = ["-i", inputURL.path]
+        
+        // Add format-specific settings
+        switch selectedFormat.lowercased() {
+        case "mp3":
+            command += ["-c:a", "libmp3lame", "-b:a", audioBitrate]
+        case "m4a":
+            command += ["-c:a", "aac", "-b:a", audioBitrate]
+        case "aac":
+            command += ["-c:a", "aac", "-b:a", audioBitrate]
+        case "wav":
+            command += ["-c:a", "pcm_s16le"]
+        default:
+            command += ["-c:a", "libmp3lame", "-b:a", audioBitrate]
+        }
+        
+        // Add sample rate
+        if let sampleRateInt = Int(sampleRate) {
+            command += ["-ar", "\(sampleRateInt)"]
+        }
+        
+        // Add channels
+        command += ["-ac", "\(audioChannels)"]
+        
+        // Add metadata if available
+        if !metadataTitle.isEmpty {
+            command += ["-metadata", "title=\(metadataTitle)"]
+        }
+        if !metadataArtist.isEmpty {
+            command += ["-metadata", "artist=\(metadataArtist)"]
+        }
+        if !metadataAlbum.isEmpty {
+            command += ["-metadata", "album=\(metadataAlbum)"]
+        }
+        
+        // Add output file
+        command.append(outputURL.path)
+        
+        return command
+    }
+    
+    // MARK: - Advanced Features using new frameworks
+    
+    private func checkNetworkStatus() {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0)
+            }
+        }) else {
+            isNetworkAvailable = false
+            return
+        }
+        
+        var flags: SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            isNetworkAvailable = false
+            return
+        }
+        
+        let isReachable = flags.contains(.reachable)
+        let needsConnection = flags.contains(.connectionRequired)
+        
+        isNetworkAvailable = isReachable && !needsConnection
+    }
+    
+    private func analyzeAudioFile(_ url: URL) {
+        let asset = AVAsset(url: url)
+        
+        // Enhanced AVFoundation analysis with more details
+        var analysis: [String: Any] = [
+            "duration": asset.duration.seconds,
+            "hasAudio": (try? asset.tracks(withMediaType: .audio))?.isEmpty == false,
+            "hasVideo": (try? asset.tracks(withMediaType: .video))?.isEmpty == false
+        ]
+        
+        // Get additional details if available
+        if let audioTracks = try? asset.tracks(withMediaType: .audio), !audioTracks.isEmpty {
+            analysis["audioStreams"] = audioTracks.count
+        }
+        
+        if let videoTracks = try? asset.tracks(withMediaType: .video), !videoTracks.isEmpty {
+            analysis["videoStreams"] = videoTracks.count
+        }
+        
+        self.audioAnalysis = analysis
+    }
+    
+    // Enhanced AVFoundation analysis provides sufficient media information
+    
+    private func processCoverArt(_ image: NSImage) -> NSImage? {
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return nil
+        }
+        
+        let ciImage = CIImage(cgImage: cgImage)
+        let context = CIContext()
+        
+        // Apply filters for better cover art
+        let filters: [CIFilter] = [
+            // Enhance contrast
+            {
+                let filter = CIFilter(name: "CIColorControls")
+                filter?.setValue(ciImage, forKey: kCIInputImageKey)
+                filter?.setValue(1.1, forKey: kCIInputContrastKey)
+                filter?.setValue(0.0, forKey: kCIInputSaturationKey)
+                return filter
+            }(),
+            // Sharpen
+            {
+                let filter = CIFilter(name: "CISharpenLuminance")
+                filter?.setValue(ciImage, forKey: kCIInputImageKey)
+                filter?.setValue(0.5, forKey: kCIInputSharpnessKey)
+                return filter
+            }()
+        ].compactMap { $0 }
+        
+        var processedImage = ciImage
+        for filter in filters {
+            if let outputImage = filter.outputImage {
+                processedImage = outputImage
+            }
+        }
+        
+        if let outputCGImage = context.createCGImage(processedImage, from: processedImage.extent) {
+            return NSImage(cgImage: outputCGImage, size: image.size)
+        }
+        
+        return image
+    }
+    
+    private func getAudioDeviceInfo() -> [String: Any] {
+        var propertySize: UInt32 = 0
+        var propertyAddress = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        
+        AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &propertyAddress, 0, nil, &propertySize)
+        
+        var deviceID: AudioDeviceID = 0
+        AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &propertyAddress, 0, nil, &propertySize, &deviceID)
+        
+        // Get device name
+        propertyAddress.mSelector = kAudioDevicePropertyDeviceNameCFString
+        var deviceName: CFString? = nil
+        propertySize = UInt32(MemoryLayout<CFString?>.size)
+        AudioObjectGetPropertyData(deviceID, &propertyAddress, 0, nil, &propertySize, &deviceName)
+        
+        return [
+            "deviceID": deviceID,
+            "deviceName": deviceName as? String ?? "Unknown"
+        ]
     }
 
     private func pickOutputFolder() {
@@ -665,71 +898,64 @@ struct ContentView: View {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "Choose"
         if panel.runModal() == .OK {
-            document.outputFolder = panel.url
+            outputFolder = panel.url
         }
     }
 
     private func pickCoverArt() {
         let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.allowedContentTypes = [.png, .jpeg]
         panel.allowsMultipleSelection = false
-        if panel.runModal() == .OK, let url = panel.url, let image = NSImage(contentsOf: url) {
-            coverArt = image
-            coverArtURL = url
-        }
-    }
-
-    private func updateFileStatus(file: ConvertibleFile, status: ConvertibleFile.Status, errorMessage: String? = nil) {
-        if let idx = document.importedFiles.firstIndex(of: file) {
-            document.importedFiles[idx].status = status
-            document.importedFiles[idx].errorMessage = errorMessage
-        }
-    }
-
-    // Send notification when all conversions are done
-    private func notifyConversionComplete() {
-        let content = UNMutableNotificationContent()
-        content.title = "Conversion Complete"
-        content.body = "All files have been converted."
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-    }
-
-    // Add addToHistory function
-    private func addToHistory(fileName: String, outputURL: URL) {
-        let item = HistoryItem(id: UUID(), fileName: fileName, outputURL: outputURL, date: Date())
-        conversionHistory.insert(item, at: 0)
-        if conversionHistory.count > 20 { conversionHistory.removeLast() }
-        HistoryItem.save(conversionHistory)
-        setSpotlightMetadata(for: outputURL)
-    }
-
-    private func setSpotlightMetadata(for url: URL) {
-        let title = metadataTitle
-        if !title.isEmpty {
-            setExtendedAttribute(name: "com.apple.metadata:kMDItemTitle", value: title, url: url)
-        }
-    }
-
-    private func setExtendedAttribute(name: String, value: String, url: URL) {
-        guard let data = value.data(using: .utf8) else { return }
-        data.withUnsafeBytes { rawBuffer in
-            let result = setxattr(url.path, name, rawBuffer.baseAddress, data.count, 0, 0)
-            if result != 0 {
-                print("Failed to set xattr \(name) on \(url.path)")
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [.png, .jpeg]
+        if panel.runModal() == .OK {
+            if let url = panel.url, let image = NSImage(contentsOf: url) {
+                coverArt = image
+                coverArtURL = url
             }
         }
     }
 
-    // Add logError and logEvent helpers
-    private func logError(_ message: String) {
-        logMessages.append("[Error] " + message)
+    private func updateFileStatus(file: ConvertibleFile, status: ConvertibleFile.Status, errorMessage: String? = nil) {
+        if let idx = importedFiles.firstIndex(of: file) {
+            importedFiles[idx].status = status
+            importedFiles[idx].errorMessage = errorMessage
+        }
     }
+
+    private func notifyConversionComplete() {
+        let notification = NSUserNotification()
+        notification.title = "Conversion Complete"
+        notification.informativeText = "All files have been converted successfully."
+        NSUserNotificationCenter.default.deliver(notification)
+    }
+
+    private func addToHistory(fileName: String, outputURL: URL) {
+        let item = HistoryItem(id: UUID(), fileName: fileName, outputURL: outputURL, date: Date())
+        conversionHistory.append(item)
+        HistoryItem.save(conversionHistory)
+    }
+
+    private func setSpotlightMetadata(for url: URL) {
+        setExtendedAttribute(name: "com.apple.metadata.kMDItemTitle", value: metadataTitle, url: url)
+        setExtendedAttribute(name: "com.apple.metadata.kMDItemArtist", value: metadataArtist, url: url)
+        setExtendedAttribute(name: "com.apple.metadata.kMDItemAlbum", value: metadataAlbum, url: url)
+    }
+
+    private func setExtendedAttribute(name: String, value: String, url: URL) {
+        if !value.isEmpty {
+            if let data = value.data(using: .utf8) {
+                setxattr(url.path, name, data.withUnsafeBytes { $0.baseAddress }, data.count, 0, 0)
+            }
+        }
+    }
+
+    private func logError(_ message: String) {
+        logMessages.append("[ERROR] \(message)")
+    }
+
     private func logEvent(_ message: String) {
-        logMessages.append("[Info] " + message)
+        logMessages.append("[INFO] \(message)")
     }
 
     private func showQuickLook(for url: URL) {
@@ -739,9 +965,77 @@ struct ContentView: View {
 
     private func shareFile(_ url: URL) {
         let picker = NSSharingServicePicker(items: [url])
-        if let window = NSApp.keyWindow, let view = window.contentView {
-            picker.show(relativeTo: .zero, of: view, preferredEdge: .minY)
+        picker.show(relativeTo: .zero, of: NSApp.keyWindow?.contentView ?? NSView(), preferredEdge: .minY)
+    }
+
+    // Move fileRow inside ContentView
+    func fileRow(for file: ConvertibleFile) -> some View {
+        HStack {
+            Text(file.url.lastPathComponent)
+                .foregroundColor(appearance == .dark ? .white : .primary)
+                .accessibilityLabel("File name: \(file.url.lastPathComponent)")
+            Spacer()
+            switch file.status {
+            case .pending:
+                Image(systemName: "clock").foregroundColor(.yellow)
+                    .accessibilityLabel("Pending")
+            case .converting:
+                ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    .accessibilityLabel("Converting")
+            case .success:
+                Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
+                    .accessibilityLabel("Conversion successful")
+            case .error:
+                Image(systemName: "xmark.octagon.fill").foregroundColor(.red)
+                    .accessibilityLabel("Conversion error")
+                if let msg = file.errorMessage {
+                    Text(msg).font(.caption).foregroundColor(.red)
+                        .accessibilityLabel("Error: \(msg)")
+                }
+            }
         }
+        .onDrag {
+            if file.status == .success {
+                let provider = NSItemProvider(object: file.url as NSURL)
+                provider.suggestedName = file.url.lastPathComponent
+                return provider
+            }
+            return NSItemProvider()
+        }
+        .contextMenu {
+            Button("Reveal in Finder") {
+                NSWorkspace.shared.activateFileViewerSelecting([file.url])
+            }
+            .accessibilityLabel("Reveal in Finder")
+            .accessibilityHint("Show this file in Finder.")
+            Button("Play/Preview") {
+                selectedFile = file
+            }
+            .accessibilityLabel("Play or Preview")
+            .accessibilityHint("Preview this file in the app.")
+            Button("Quick Look") {
+                showQuickLook(for: file.url)
+            }
+            .accessibilityLabel("Quick Look")
+            .accessibilityHint("Show a Quick Look preview of this file.")
+            if file.status == .success {
+                Button("Share") {
+                    shareFile(file.url)
+                }
+                .accessibilityLabel("Share")
+                .accessibilityHint("Share this file using the macOS share sheet.")
+            }
+            Button("Remove from List") {
+                if let idx = importedFiles.firstIndex(of: file) {
+                    withAnimation {
+                        importedFiles.remove(at: idx)
+                    }
+                }
+            }
+            .accessibilityLabel("Remove from List")
+            .accessibilityHint("Remove this file from the imported files list.")
+        }
+        .transition(.move(edge: .leading).combined(with: .opacity))
     }
 
     struct QuickLookSheetView: View {
@@ -770,16 +1064,14 @@ struct ContentView: View {
 
         func makeNSViewController(context: Context) -> NSViewController {
             let controller = NSViewController()
-            controller.touchBar = makeTouchBar()
+            let touchBar = NSTouchBar()
+            let coordinator = context.coordinator
+            touchBar.delegate = coordinator
+            touchBar.defaultItemIdentifiers = [.importItem, .convertItem, .preferencesItem]
+            controller.touchBar = touchBar
             return controller
         }
         func updateNSViewController(_ nsViewController: NSViewController, context: Context) {}
-        private func makeTouchBar() -> NSTouchBar {
-            let touchBar = NSTouchBar()
-            touchBar.delegate = context.coordinator
-            touchBar.defaultItemIdentifiers = [.importItem, .convertItem, .preferencesItem]
-            return touchBar
-        }
         func makeCoordinator() -> Coordinator {
             Coordinator(importAction: importAction, convertAction: convertAction, preferencesAction: preferencesAction)
         }
@@ -815,13 +1107,13 @@ struct ContentView: View {
             @objc func preferencesTapped() { preferencesAction() }
         }
     }
+}
 
-    // Touch Bar Identifiers
-    extension NSTouchBarItem.Identifier {
-        static let importItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.import")
-        static let convertItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.convert")
-        static let preferencesItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.preferences")
-    }
+// Touch Bar Identifiers
+extension NSTouchBarItem.Identifier {
+    static let importItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.import")
+    static let convertItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.convert")
+    static let preferencesItem = NSTouchBarItem.Identifier("com.Ayaan.AudioVideoConverter.preferences")
 }
 
 // MARK: - Gradient Button Style
@@ -872,7 +1164,7 @@ struct HistoryItem: Identifiable, Codable, Equatable {
     let date: Date
     
     static func load() -> [HistoryItem] {
-        let defaults = UserDefaults(suiteName: iCloudSuite) ?? .standard
+        let defaults = UserDefaults(suiteName: "iCloud.com.Ayaan.AudioVideoConverter") ?? .standard
         if let data = defaults.data(forKey: "conversionHistory"),
            let items = try? JSONDecoder().decode([HistoryItem].self, from: data) {
             return items
@@ -880,7 +1172,7 @@ struct HistoryItem: Identifiable, Codable, Equatable {
         return []
     }
     static func save(_ items: [HistoryItem]) {
-        let defaults = UserDefaults(suiteName: iCloudSuite) ?? .standard
+        let defaults = UserDefaults(suiteName: "iCloud.com.Ayaan.AudioVideoConverter") ?? .standard
         if let data = try? JSONEncoder().encode(items) {
             defaults.set(data, forKey: "conversionHistory")
         }
@@ -889,6 +1181,6 @@ struct HistoryItem: Identifiable, Codable, Equatable {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(document: .constant(ConverterDocument()))
+        ContentView()
     }
 } 

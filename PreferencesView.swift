@@ -1,7 +1,5 @@
 import SwiftUI
 
-let iCloudSuite = "iCloud.com.Ayaan.AudioVideoConverter"
-
 struct PreferencesView: View {
     @AppStorage("defaultAppearance", store: UserDefaults(suiteName: iCloudSuite)) private var defaultAppearance: String = "System"
     @AppStorage("defaultOutputFolder", store: UserDefaults(suiteName: iCloudSuite)) private var defaultOutputFolder: String = ""

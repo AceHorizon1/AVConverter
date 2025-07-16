@@ -16,9 +16,13 @@ struct ConverterDocument: FileDocument, Codable {
     var audioChannels: Int = 2
     var videoResolution: String = "1280x720"
     var videoBitrate: String = "2M"
+    
+    // UI triggers
+    var importFilesTrigger: Bool = false
+    var pickOutputFolderTrigger: Bool = false
 
     // MARK: - FileDocument
-    init(importedFiles: [String] = [], selectedFormat: String = "mp3", selectedEngine: String = "AVFoundation", outputFolderPath: String? = nil, metadataTitle: String = "", metadataArtist: String = "", metadataAlbum: String = "", audioBitrate: String = "192k", sampleRate: String = "44100", audioChannels: Int = 2, videoResolution: String = "1280x720", videoBitrate: String = "2M") {
+    init(importedFiles: [String] = [], selectedFormat: String = "mp3", selectedEngine: String = "AVFoundation", outputFolderPath: String? = nil, metadataTitle: String = "", metadataArtist: String = "", metadataAlbum: String = "", audioBitrate: String = "192k", sampleRate: String = "44100", audioChannels: Int = 2, videoResolution: String = "1280x720", videoBitrate: String = "2M", importFilesTrigger: Bool = false, pickOutputFolderTrigger: Bool = false) {
         self.importedFiles = importedFiles
         self.selectedFormat = selectedFormat
         self.selectedEngine = selectedEngine
@@ -31,6 +35,8 @@ struct ConverterDocument: FileDocument, Codable {
         self.audioChannels = audioChannels
         self.videoResolution = videoResolution
         self.videoBitrate = videoBitrate
+        self.importFilesTrigger = importFilesTrigger
+        self.pickOutputFolderTrigger = pickOutputFolderTrigger
     }
     init(configuration: ReadConfiguration) throws {
         guard let data = configuration.file.regularFileContents else {
