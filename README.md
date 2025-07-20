@@ -6,9 +6,10 @@ A modern, native macOS application for converting audio and video files between 
 
 ### Core Functionality
 - **File Import**: Drag & drop or browse to import audio and video files
-- **Format Conversion**: Convert between popular formats (MP4, MOV, MP3, M4A, WAV, etc.)
+- **Format Conversion**: Convert between popular formats (MP4, MOV, MP3, M4A, WAV, FLAC, OGG, etc.)
 - **Real-time Progress**: Live conversion progress with detailed status updates
-- **FFmpeg Integration**: Powered by FFmpeg for reliable, high-quality conversions
+- **Multiple Engines**: Choose between AVFoundation, FFmpeg, or FreeConvert API
+- **Cloud Processing**: FreeConvert API for cloud-based conversions with advanced features
 
 ### Native macOS Features
 - **Custom Menu Bar**: Native macOS menu with File, Edit, View, and Help menus
@@ -35,15 +36,22 @@ A modern, native macOS application for converting audio and video files between 
 
 - **macOS**: 13.0 (Ventura) or later
 - **Xcode**: 14.0 or later
-- **FFmpeg**: Must be installed on the system (install via Homebrew: `brew install ffmpeg`)
+- **FFmpeg**: Optional - install via Homebrew: `brew install ffmpeg` (for local conversions)
+- **FreeConvert API Key**: Optional - get from [FreeConvert.com](https://www.freeconvert.com/api) (for cloud conversions)
 
 ## Installation
 
 ### Prerequisites
-1. Install FFmpeg:
+1. **For local conversions** (optional): Install FFmpeg:
    ```bash
    brew install ffmpeg
    ```
+
+2. **For cloud conversions** (optional): Get a FreeConvert API key:
+   - Visit [FreeConvert.com API](https://www.freeconvert.com/api)
+   - Sign up for an account
+   - Generate an API key
+   - Configure it in the app settings
 
 ### Building from Source
 1. Clone the repository:
@@ -65,9 +73,13 @@ A modern, native macOS application for converting audio and video files between 
 1. Launch the app
 2. Import files by dragging them into the app or using File → Import
 3. Select your desired output format
-4. Click "Convert" to start the process
-5. Monitor progress in real-time
-6. Find converted files in the specified output directory
+4. Choose your conversion engine:
+   - **AVFoundation**: Fast local conversion (limited formats)
+   - **FFmpeg**: High-quality local conversion (requires FFmpeg installation)
+   - **FreeConvert**: Cloud-based conversion with advanced features (requires API key)
+5. Click "Convert" to start the process
+6. Monitor progress in real-time
+7. Find converted files in the specified output directory
 
 ### Advanced Features
 - **Batch Conversion**: Select multiple files and convert them all at once
@@ -81,7 +93,7 @@ A modern, native macOS application for converting audio and video files between 
 - MP4, MOV, AVI, MKV, WMV, FLV, WebM, and more
 
 ### Audio Formats
-- MP3, M4A, WAV, FLAC, AAC, OGG, and more
+- MP3, M4A, WAV, FLAC, AAC, OGG, WMA, OPUS, and more
 
 ## Architecture
 
@@ -104,6 +116,7 @@ The app is built using modern SwiftUI practices with:
 - AVFoundation for media handling
 - Core Data for data persistence
 - Various macOS frameworks for native features
+- FreeConvert API for cloud-based conversions
 
 ## Contributing
 

@@ -55,9 +55,13 @@ struct ContentView: View {
     @State private var isNetworkAvailable: Bool = true
     @State private var audioAnalysis: [String: Any] = [:]
     @State private var showAdvancedSettings: Bool = false
+    @State private var showFreeConvertSettings: Bool = false
+    
+    // FreeConvert API manager
+    @StateObject private var freeConvertManager = FreeConvertAPIManager(apiKey: UserDefaults.standard.string(forKey: "freeconvert_api_key") ?? "")
 
-    let formats = ["mp3", "m4a", "wav", "aac"]
-    let engines = ["AVFoundation", "ffmpeg"]
+    let formats = ["mp3", "m4a", "wav", "aac", "flac", "ogg", "opus"]
+    let engines = ["AVFoundation", "ffmpeg", "FreeConvert"]
     
     // MARK: - UI Components
     private var backgroundGradient: some View {
@@ -146,13 +150,27 @@ struct ContentView: View {
     }
     
     private var engineSelectionView: some View {
-        Picker("Engine:", selection: $selectedEngine) {
-            ForEach(engines, id: \.self) { engine in
-                Text(engine)
+        HStack {
+            Picker("Engine:", selection: $selectedEngine) {
+                ForEach(engines, id: \.self) { engine in
+                    Text(engine)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            
+            if selectedEngine == "FreeConvert" {
+                Button(action: { showFreeConvertSettings = true }) {
+                    Image(systemName: "gear")
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.borderless)
+                .help("Configure FreeConvert API settings")
             }
         }
-        .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal)
+        .sheet(isPresented: $showFreeConvertSettings) {
+            FreeConvertSettingsView()
+        }
     }
     
     private var conversionSettingsView: some View {
@@ -525,12 +543,15 @@ struct ContentView: View {
         progress = 0.0
         statusMessage = ""
         let total = Double(importedFiles.count)
+        
         for (index, file) in importedFiles.enumerated() {
             updateFileStatus(file: file, status: .converting)
             let outputDir = outputFolder ?? file.url.deletingLastPathComponent()
             let outputURL = outputDir.appendingPathComponent(file.url.deletingPathExtension().lastPathComponent)
                 .appendingPathExtension(selectedFormat)
-            if selectedEngine == "AVFoundation" {
+            
+            switch selectedEngine {
+            case "AVFoundation":
                 convertWithAVFoundation(inputURL: file.url, outputURL: outputURL) { success, error in
                     DispatchQueue.main.async {
                         progress = Double(index + 1) / total
@@ -571,7 +592,31 @@ struct ContentView: View {
                         }
                     }
                 }
-            } else {
+                
+            case "FreeConvert":
+                convertWithFreeConvert(inputURL: file.url, outputURL: outputURL, index: index, total: total) { success, error in
+                    DispatchQueue.main.async {
+                        if success {
+                            updateFileStatus(file: file, status: .success)
+                            logEvent("Successfully converted \(file.url.lastPathComponent) using FreeConvert")
+                            addToHistory(fileName: file.url.lastPathComponent, outputURL: outputURL)
+                            setSpotlightMetadata(for: outputURL)
+                            if index == importedFiles.count - 1 {
+                                isConverting = false
+                                notifyConversionComplete()
+                            }
+                        } else {
+                            updateFileStatus(file: file, status: .error, errorMessage: error?.localizedDescription ?? "FreeConvert failed")
+                            logError("FreeConvert failed for \(file.url.lastPathComponent): \(error?.localizedDescription ?? "Unknown error")")
+                            statusMessage = "Conversion failed for \(file.url.lastPathComponent)"
+                            if index == importedFiles.count - 1 {
+                                isConverting = false
+                            }
+                        }
+                    }
+                }
+                
+            default: // ffmpeg
                 convertWithFFmpeg(inputURL: file.url, outputURL: outputURL) { success, error in
                     DispatchQueue.main.async {
                         progress = Double(index + 1) / total
@@ -605,6 +650,77 @@ struct ContentView: View {
         exportSession?.outputFileType = fileType(for: selectedFormat)
         exportSession?.exportAsynchronously {
             completion(exportSession?.status == .completed, exportSession?.error)
+        }
+    }
+    
+    private func convertWithFreeConvert(inputURL: URL, outputURL: URL, index: Int, total: Double, completion: @escaping (Bool, Error?) -> Void) {
+        // Check if FreeConvert is enabled and API key is available
+        let isEnabled = UserDefaults.standard.bool(forKey: "freeconvert_enabled")
+        let apiKey = UserDefaults.standard.string(forKey: "freeconvert_api_key") ?? ""
+        
+        guard isEnabled && !apiKey.isEmpty else {
+            completion(false, NSError(domain: "FreeConvert", code: -1, userInfo: [NSLocalizedDescriptionKey: "FreeConvert API is not configured. Please enable it in settings and add your API key."]))
+            return
+        }
+        
+        // Check if format is supported by FreeConvert
+        guard FreeConvertAPIManager.isValidAudioFormat(selectedFormat) else {
+            completion(false, NSError(domain: "FreeConvert", code: -1, userInfo: [NSLocalizedDescriptionKey: "Format \(selectedFormat) is not supported by FreeConvert API"]))
+            return
+        }
+        
+        // Create conversion options
+        let quality = UserDefaults.standard.string(forKey: "freeconvert_quality") ?? "high"
+        let normalize = UserDefaults.standard.bool(forKey: "freeconvert_normalize")
+        let fadeIn = UserDefaults.standard.integer(forKey: "freeconvert_fade_in")
+        let fadeOut = UserDefaults.standard.integer(forKey: "freeconvert_fade_out")
+        
+        let options = AudioConversionOptions(
+            format: selectedFormat,
+            bitrate: audioBitrate,
+            sampleRate: Int(sampleRate),
+            channels: audioChannels,
+            quality: quality,
+            normalize: normalize,
+            fadeIn: fadeIn > 0 ? fadeIn : nil,
+            fadeOut: fadeOut > 0 ? fadeOut : nil
+        )
+        
+        // Update API manager with current API key
+        freeConvertManager.apiKey = apiKey
+        
+        // Bind to FreeConvert manager's progress and status
+        let progressBinding = Binding(
+            get: { self.freeConvertManager.progress },
+            set: { newValue in
+                self.freeConvertManager.progress = newValue
+                self.progress = (Double(index) + newValue) / total
+            }
+        )
+        
+        let statusBinding = Binding(
+            get: { self.freeConvertManager.statusMessage },
+            set: { self.statusMessage = $0 }
+        )
+        
+        // Start conversion
+        freeConvertManager.convertAudio(fileURL: inputURL, options: options) { result in
+            switch result {
+            case .success(let convertedURL):
+                // Move the converted file to the desired output location
+                do {
+                    if FileManager.default.fileExists(atPath: outputURL.path) {
+                        try FileManager.default.removeItem(at: outputURL)
+                    }
+                    try FileManager.default.moveItem(at: convertedURL, to: outputURL)
+                    completion(true, nil)
+                } catch {
+                    completion(false, error)
+                }
+                
+            case .failure(let error):
+                completion(false, error)
+            }
         }
     }
 

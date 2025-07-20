@@ -14,6 +14,8 @@
 		D22F67082E25641C00DEE179 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67072E25641C00DEE179 /* ContentView.swift */; };
 		D22F67092E25641C00DEE179 /* AudioVideoConverterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22F67062E25641C00DEE179 /* AudioVideoConverterApp.swift */; };
 		D22F670C2E256B9600DEE179 /* Appicon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D22F670B2E256B9600DEE179 /* Appicon.xcassets */; };
+		D25E29452E2C76D100C7DDBC /* FreeConvertSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25E29442E2C76D000C7DDBC /* FreeConvertSettingsView.swift */; };
+		D25E29462E2C76D100C7DDBC /* FreeConvertAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25E29432E2C76D000C7DDBC /* FreeConvertAPI.swift */; };
 		D27CC6112E280DBA007F19B1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27CC6102E280DBA007F19B1 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
@@ -43,6 +45,8 @@
 		D22F67072E25641C00DEE179 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D22F670A2E25642100DEE179 /* AudioVideoConverter-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioVideoConverter-Bridging-Header.h"; sourceTree = "<group>"; };
 		D22F670B2E256B9600DEE179 /* Appicon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Appicon.xcassets; sourceTree = "<group>"; };
+		D25E29432E2C76D000C7DDBC /* FreeConvertAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeConvertAPI.swift; sourceTree = "<group>"; };
+		D25E29442E2C76D000C7DDBC /* FreeConvertSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeConvertSettingsView.swift; sourceTree = "<group>"; };
 		D2710EF12E255ABE00F4D335 /* AudioVideoConverter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioVideoConverter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2710EFF2E255AC000F4D335 /* AudioVideoConverterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2710F092E255AC000F4D335 /* AudioVideoConverterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioVideoConverterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,6 +100,8 @@
 				D2239FAC2E26C1260026F620 /* PreferencesView.swift */,
 				D27CC6102E280DBA007F19B1 /* Constants.swift */,
 				D2239FB22E26C7EC0026F620 /* ConverterDocument.swift */,
+				D25E29432E2C76D000C7DDBC /* FreeConvertAPI.swift */,
+				D25E29442E2C76D000C7DDBC /* FreeConvertSettingsView.swift */,
 				D22F670B2E256B9600DEE179 /* Appicon.xcassets */,
 				D2710F022E255AC000F4D335 /* AudioVideoConverterTests */,
 				D2710F0C2E255AC000F4D335 /* AudioVideoConverterUITests */,
@@ -273,6 +279,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D27CC6112E280DBA007F19B1 /* Constants.swift in Sources */,
+				D25E29452E2C76D100C7DDBC /* FreeConvertSettingsView.swift in Sources */,
+				D25E29462E2C76D100C7DDBC /* FreeConvertAPI.swift in Sources */,
 				D22F67082E25641C00DEE179 /* ContentView.swift in Sources */,
 				D2239FB32E26C7EC0026F620 /* ConverterDocument.swift in Sources */,
 				D2239FAD2E26C1260026F620 /* PreferencesView.swift in Sources */,
@@ -605,8 +613,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-
 	};
 	rootObject = D2710EE92E255ABE00F4D335 /* Project object */;
 }
